@@ -60,7 +60,7 @@ func main() {
 
     port := os.Getenv("PORT") // Render ส่งมาให้ ในเครื่องไม่มีก็ใช้ 8080
     if port == "" {
-        port = "10000"
+        port = "8080"
     }
     log.Println("MovieHub API ฟังอยู่ที่ :"+port, "ต้อนรับ", origins)
     log.Fatal(http.ListenAndServe(":"+port, mw.Logging(mw.CORS(origins, mux))))
