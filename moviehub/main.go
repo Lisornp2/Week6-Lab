@@ -38,6 +38,7 @@ func main() {
     login := func(next http.HandlerFunc) http.HandlerFunc { return mw.RequireLogin(tickets, next) }
     admin := func(next http.HandlerFunc) http.HandlerFunc { return login(mw.RequireRole("admin", next)) }
 
+
     mux := http.NewServeMux()
     mux.HandleFunc("POST /api/auth/register", h.Register)
     mux.HandleFunc("POST /api/auth/login", h.Login)
