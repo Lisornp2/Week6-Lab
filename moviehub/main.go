@@ -37,7 +37,17 @@ func main() {
     // login = ต้องมีตั๋ว, admin = ต้องมีตั๋วและบทบาทเป็น admin (ตรวจตั๋วก่อนเสมอ ค่อยดูบทบาท)
     login := func(next http.HandlerFunc) http.HandlerFunc { return mw.RequireLogin(tickets, next) }
     admin := func(next http.HandlerFunc) http.HandlerFunc { return login(mw.RequireRole("admin", next)) }
+    // ตัวอย่างใน main.go
+    handler := mw.CORS([]string{"*"}, router)
+    allowedOrigins := []string{
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "https://moviehub-650710873.vercel.app", // ใส่ URL หน้าเว็บจริงบน Vercel ของคุณ
+}
 
+handler := mw.CORS(allowedOrigins, router)
     mux := http.NewServeMux()
     mux.HandleFunc("POST /api/auth/register", h.Register)
     mux.HandleFunc("POST /api/auth/login", h.Login)
