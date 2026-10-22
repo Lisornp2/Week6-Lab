@@ -8,8 +8,8 @@ import (
     "unicode/utf8"
 
     "moviehub/auth"
-    "moviehub/mw"
     "moviehub/store"
+    "moviehub/mw"
 )
 
 type registerReq struct {

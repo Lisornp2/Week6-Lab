@@ -10,15 +10,15 @@ import (
     "syscall"
     "time"
 
-    "github.com/jackc/pgx/v5/pgxpool"
-
     "kitchen/handler"
     "kitchen/mw"
     "kitchen/store"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-    ctx := context.Background()
+
+	 ctx := context.Background()
 
     cfg, err := pgxpool.ParseConfig(os.Getenv("DATABASE_URL"))
     if err != nil { log.Fatal(err) }
@@ -49,12 +49,12 @@ func main() {
 
     quit := make(chan os.Signal, 1)
     signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-    <-quit
+    <-quit                              // ยืนรอสัญญาณปิดร้าน
     log.Println("ได้รับสัญญาณปิดร้าน ไม่รับใบสั่งใหม่แล้ว")
 
-    shutCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-    if err := srv.Shutdown(shutCtx); err != nil {
+    if err := srv.Shutdown(ctx); err != nil {
         log.Println("ปิดไม่ทัน", err)
     }
     log.Println("ปิดร้านเรียบร้อย ลูกค้ากลับหมดแล้ว")

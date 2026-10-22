@@ -41,8 +41,7 @@ func (s *Store) MemberByEmail(ctx context.Context, email string) (Member, error)
         return Member{}, ErrNotFound
     }
     return m, err
-}
-// MemberByID ใช้กับ GET /api/me: เลขมาจากตั๋วที่ตรวจแล้ว
+}// MemberByID ใช้กับ GET /api/me: เลขมาจากตั๋วที่ตรวจแล้ว
 func (s *Store) MemberByID(ctx context.Context, id int64) (Member, error) {
     var m Member
     err := s.Pool.QueryRow(ctx,

@@ -3,9 +3,9 @@ package store
 import (
     "context"
     "errors"
+
     "github.com/jackc/pgx/v5"
 )
-
 type Movie struct {
     ID      int64   `json:"id"`
     Title   string  `json:"title"`
@@ -14,7 +14,10 @@ type Movie struct {
     Year    *int    `json:"year"`
     Rating  float64 `json:"rating"`
     Poster  *string `json:"poster"`
-    Detail  *string `json:"detail"`
+}
+type MovieDetail struct {
+    Movie
+    Detail *string `json:"detail"`
 }
 
 // SearchMovies ค่าจากผู้ใช้เดินทางผ่าน $1 แยกจากคำสั่งเสมอ
@@ -26,7 +29,7 @@ func (s *Store) SearchMovies(ctx context.Context, q string) ([]Movie, error) {
                   WHERE mg.movie_id = m.id AND mg.position = 0),
                 extract(year FROM m.release_date)::int,
                 round(m.vote_average, 1)::float8,
-                CASE WHEN m.poster_path LIKE 'http%' THEN m.poster_path
+                 CASE WHEN m.poster_path LIKE 'http%' THEN m.poster_path
                      ELSE 'https://image.tmdb.org/t/p/w500' || m.poster_path END
          FROM movies m
          WHERE lower(m.title) LIKE '%' || lower($1) || '%'
@@ -44,10 +47,10 @@ func (s *Store) SearchMovies(ctx context.Context, q string) ([]Movie, error) {
         out = append(out, m)
     }
     return out, rows.Err()
-}
 
-func (s *Store) GetMovie(ctx context.Context, id int64) (Movie, error) {
-    var m Movie
+}
+func (s *Store) GetMovie(ctx context.Context, id int64) (MovieDetail, error) {
+    var m MovieDetail
     err := s.Pool.QueryRow(ctx,
         `SELECT m.id, m.title, m.title_th,
                 (SELECT coalesce(g.name_th, g.name_en) FROM movie_genres mg

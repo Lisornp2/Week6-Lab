@@ -5,14 +5,15 @@ import (
     "log"
     "net/http"
     "strconv"
+    "errors"
+
 	"moviehub/auth"
     "moviehub/store"
-    "errors"
 )
 
 type Handler struct {
-    Store *store.Store
-	Tickets *auth.Issuer
+    Store   *store.Store
+    Tickets *auth.Issuer
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

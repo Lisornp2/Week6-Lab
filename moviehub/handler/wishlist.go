@@ -1,16 +1,18 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"moviehub/mw"
 	"moviehub/store"
 )
 
-func (h *Handler) ListWishlist(w http.ResponseWriter, r *http.Request) {
+// GetWishlist แสดง Wishlist ของสมาชิกที่ login อยู่
+func (h *Handler) GetWishlist(w http.ResponseWriter, r *http.Request) {
 	memberID, ok := mw.MemberID(r.Context())
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "UNAUTHORIZED", "กรุณาเข้าสู่ระบบ")
+		writeError(w, http.StatusUnauthorized, "NO_TOKEN", "กรุณาเข้าสู่ระบบก่อน")
 		return
 	}
 
@@ -23,46 +25,48 @@ func (h *Handler) ListWishlist(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"items": items})
 }
 
-func (h *Handler) AddWishlist(w http.ResponseWriter, r *http.Request) {
+// AddWishlistItem เพิ่มหนังเข้ารายการที่อยากดู
+func (h *Handler) AddWishlistItem(w http.ResponseWriter, r *http.Request) {
 	memberID, ok := mw.MemberID(r.Context())
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "UNAUTHORIZED", "กรุณาเข้าสู่ระบบ")
+		writeError(w, http.StatusUnauthorized, "NO_TOKEN", "กรุณาเข้าสู่ระบบก่อน")
 		return
 	}
 
-	movieID, ok := pathID(r, "id")
+	movieID, ok := pathID(r, "movieId")
 	if !ok {
 		writeError(w, http.StatusBadRequest, "BAD_ID", "เลขหนังต้องเป็นตัวเลข")
 		return
 	}
 
-	err := h.Store.AddWishlist(r.Context(), memberID, movieID)
+	err := h.Store.AddWishlistItem(r.Context(), memberID, movieID)
+	if errors.Is(err, store.ErrNotFound) {
+		writeError(w, http.StatusNotFound, "MOVIE_NOT_FOUND", "ไม่พบหนังเรื่องนี้")
+		return
+	}
 	if err != nil {
-		if err == store.ErrNotFound {
-			writeError(w, http.StatusNotFound, "MOVIE_NOT_FOUND", "ไม่พบหนังเรื่องนี้")
-			return
-		}
 		internal(w, err)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"success": true})
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) RemoveWishlist(w http.ResponseWriter, r *http.Request) {
+// RemoveWishlistItem นำหนังออกจากรายการที่อยากดู
+func (h *Handler) RemoveWishlistItem(w http.ResponseWriter, r *http.Request) {
 	memberID, ok := mw.MemberID(r.Context())
 	if !ok {
-		writeError(w, http.StatusUnauthorized, "UNAUTHORIZED", "กรุณาเข้าสู่ระบบ")
+		writeError(w, http.StatusUnauthorized, "NO_TOKEN", "กรุณาเข้าสู่ระบบก่อน")
 		return
 	}
 
-	movieID, ok := pathID(r, "id")
+	movieID, ok := pathID(r, "movieId")
 	if !ok {
 		writeError(w, http.StatusBadRequest, "BAD_ID", "เลขหนังต้องเป็นตัวเลข")
 		return
 	}
 
-	if err := h.Store.RemoveWishlist(r.Context(), memberID, movieID); err != nil {
+	if err := h.Store.RemoveWishlistItem(r.Context(), memberID, movieID); err != nil {
 		internal(w, err)
 		return
 	}
